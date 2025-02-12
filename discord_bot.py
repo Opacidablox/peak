@@ -1,4 +1,5 @@
 import discord
+import random
 from discord.ext import commands
 from configuration import settings
 
@@ -38,5 +39,19 @@ async def heh(ctx, count_heh = 5):
 @bot.command()
 async def suma(ctx, n1:int, n2:int):
     await ctx.send(f"La suma de {n1} con {n2} es {n1 + n2}")
+
+@bot.command(description='For when you wanna settle the score some other way')
+async def choose(ctx, *choices: str):
+    """Chooses between multiple choices."""
+    await ctx.send(random.choice(choices))
+
+@bot.group()
+async def cool(ctx):
+    """Says if a user is cool.
+
+    In reality this just checks if a subcommand is being invoked.
+    """
+    if ctx.invoked_subcommand is None:
+        await ctx.send(f'No, {ctx.subcommand_passed} is not cool')
 
 bot.run(settings["TOKEN"])
