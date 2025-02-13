@@ -1,5 +1,4 @@
-import discord
-import random
+import discord, random, os, requests
 from discord.ext import commands
 from configuration import settings
 
@@ -7,6 +6,12 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix='$', intents=intents)
+
+def get_duck_image_url():    
+    url = 'https://random-d.uk/api/random'
+    res = requests.get(url)
+    data = res.json()
+    return data['url']
 
 @bot.event
 async def on_ready():
@@ -44,6 +49,47 @@ async def suma(ctx, n1:int, n2:int):
 async def choose(ctx, *choices: str):
     """Chooses between multiple choices."""
     await ctx.send(random.choice(choices))
+
+@bot.command()
+async def mem(ctx):
+    with open('images/meme1.jpeg', 'rb') as f:
+        # ¡Vamos a almacenar el archivo de la biblioteca Discord convertido en esta variable!
+        picture = discord.File(f)
+    # A continuación, podemos enviar este archivo como parámetro.
+    await ctx.send(file=picture)
+
+@bot.command()
+async def memes(ctx):
+    images = os.listdir('images')
+    with open(f'images/{random.choice(images)}', 'rb') as f:
+            picture = discord.File(f)
+    # A continuación, podemos enviar este archivo como parámetro.
+    await ctx.send(file=picture)
+
+@bot.command('duck')
+async def duck(ctx):
+    '''Una vez que llamamos al comando duck, 
+    el programa llama a la función get_duck_image_url'''
+    image_url = get_duck_image_url()
+    await ctx.send(image_url)
+
+@bot.command()
+async def poke(ctx,arg):
+    try:
+        pokemon = arg.split(" ",1)[0].lower()
+        result = requests.get("https://pokeapi.co/api/v2/pokemon/"+pokemon)
+        if result.text == "Not Found":
+            await ctx.send("Pokemon no encontrado")
+        else:
+            image_url = result.json()["sprites"]["front_default"]
+            print(image_url)
+            await ctx.send(image_url)
+    except Exception as e:
+        print("Error:", e)
+@poke.error
+async def error_type(ctx,error):
+    if isinstance(error,commands.errors.MissingRequiredArgument):
+        await ctx.send("Tienes que darme un pokemon")
 
 @bot.group()
 async def cool(ctx):
